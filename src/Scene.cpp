@@ -67,9 +67,17 @@ void Scene::Update(){
             if(drone->position[2] > 0){
                 if(this->CollisionDetector(drone) && drone->position[2] == drone->animation.goalPosition[2]){
                     std::cout << "!!![EMERYGENCY LANDING]!!!" << std::endl;
-                    for (std::size_t i = 0; i < drone->moves.size(); ++i){
+                    for (std::size_t i = 1; i < drone->moves.size(); ++i){
                         drone->moves.pop();
                     }
+                    if(!drone->Rotated())
+                        drone->moves.push([drone]()
+                                            { drone->Right(rand()%90); });
+
+                    drone->moves.push([ drone]()
+                                     { drone->Forward(30); });
+                    drone->moves.push([drone]()
+                                     { drone->GoVerdical(-drone->position[2]); });
                 }
             }
         }
