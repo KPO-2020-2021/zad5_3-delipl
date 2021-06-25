@@ -32,7 +32,7 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = "2D Rotation based on C++ Boiler Plate"
+PROJECT_NAME           = "Drone on Titan by Deli"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
@@ -772,8 +772,8 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT = @CMAKE_CURRENT_SOURCE_DIR@/README.md
-INPUT                  += @CMAKE_CURRENT_SOURCE_DIR@/include/ @CMAKE_CURRENT_SOURCE_DIR@/src
-
+INPUT                  += @CMAKE_CURRENT_SOURCE_DIR@/app/ @CMAKE_CURRENT_SOURCE_DIR@/inc/ @CMAKE_CURRENT_SOURCE_DIR@/src/ @CMAKE_CURRENT_SOURCE_DIR@/prn/ 
+INPUT                  +=  @CMAKE_CURRENT_SOURCE_DIR@/inc/SceneObjects/ @CMAKE_CURRENT_SOURCE_DIR@/src/SceneObjects/                       
 
 FILE_PATTERNS += *.md *.markdown
 
@@ -868,7 +868,7 @@ EXAMPLE_RECURSIVE      = NO
 # that contain images that are to be included in the documentation (see the
 # \image command).
 
-IMAGE_PATH             =
+IMAGE_PATH             = 
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
@@ -1116,7 +1116,8 @@ HTML_STYLESHEET        =
 # list). For an example see the documentation.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_EXTRA_STYLESHEET  =
+GENERATE_TREEVIEW      = YES # required!
+HTML_EXTRA_STYLESHEET  =  @CMAKE_CURRENT_SOURCE_DIR@/lib/doxygen-awesome-css/doxygen-awesome.css 
 
 # The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
 # other source files which should be copied to the HTML output directory. Note

@@ -1,54 +1,36 @@
 
-## Building
+# Zadanie 5 Dron na Tytanie Faza 2
+## Wykonane zadania
+- Stworzenie 3 przeszkód
+- Możliwość tworzenia obiektów
+- Możliwość usuwania obiektów
+- Losowe położenie 
 
-Build by making a build directory (i.e. `build/`), run `cmake` in that dir, and then use `make` to build the desired target.
+![Przepis na naleśniczki w Dron.cpp](./img/3drones.gif)
 
-Requirements: cmake, gnuplot, doxygen + dot (in graphviz library)
-
-Example:
+## Budowanie
 
 ``` bash
-> mkdir build && cd build
-> cmake .. #### options: -DCMAKE_BUILD_TYPE=[Debug | Coverage | Release], Debug is default
-> make     #### compilation
-> ./main   #### main() from app
-> make test      #### Compile the tests
-> ./unit_tests -s   #### Start the tests, -s flag - full description of each case
-> make fulltest #### alternative for above, compile & run tests with full decription
-> make coverage  #### Generate a coverage report
-> make doc       #### Generate html documentation
+git clone https://github.com/KPO-2020-2021/zad5_2-delipl.git # Cloning repository
+cd zad5_2-delipl
+
+mkdir lib/  # Download doctest lib
+cd lib
+git submodule add https://github.com/onqtam/doctest.git
+git submodule add https://github.com/jothepro/doxygen-awesome-css.git
+cd ../
+
+mkdir build tmp && cd build
+cmake ..           # options: -DCMAKE_BUILD_TYPE=[Debug | Coverage | Release], Debug is default
+make fulltest      # Makes and runs the tests.
+make doc
+
+make app           # build and run
 ```
 
-Things to remember:
-* changes to CMakeLists.txt in the main folder with new files added, i.e.:
-```cpp
-# --------------------------------------------------------------------------------
-#                         Locate files (change as needed).
-# --------------------------------------------------------------------------------
-set(SOURCES          # All .cpp files in src/
-    src/lacze_do_gnuplota
-    src/Matrix2x2.cpp
-    src/Rectangle .cpp
-    src/Vector2D.cpp # etc.
-)
-set(TESTFILES        # All .cpp files in tests/
-    Vector2D.cpp
-    Matrix2x2.cpp
-    Rectangle.cpp # etc.
-)
-set(LIBRARY_NAME zadX)  # Default name for the library built from src/*.cpp (change if you wish)
-```
-* changes to tests/CMakeLists.txt (in tests subfolder) with new files added, i.e.:
-```cpp
-# List all files containing tests. (Change as needed)
-set(TESTFILES        # All .cpp files in tests/
-    main.cpp
-    test_Wektor2D.cpp
-    test_Macierz2x2.cpp
-    test_Prostokat.cpp # etc.
-)
-```
-The `main.cpp` in the folder `tests` is needed. Only there we define `#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN`.
+## Dokumentacja
+Dokumentacja po zbudowaniu znajduje się w build/html/index.html
 
-The main loop of the program is in the `app` folder.
-
+``` bash
+firefox html/index.html
+```

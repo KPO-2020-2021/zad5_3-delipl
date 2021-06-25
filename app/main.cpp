@@ -1,176 +1,337 @@
-// Executables must have the following defined if the library contains
-// doctest definitions. For builds with this disabled, e.g. code shipped to
-// users, this can be left out.
-#ifdef ENABLE_DOCTEST_IN_LIBRARY
-#define DOCTEST_CONFIG_IMPLEMENT
-#include "../tests/doctest/doctest.h"
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
 #endif
-
+#include <stdlib.h> /* srand, rand */
+#include <time.h>   /* time */
 #include <iostream>
-#include <iomanip>
-#include <stdlib.h>
-#include <fstream>
-#include <string>
-
-#include "exampleConfig.h"
-#include "example.h"
-#include "vector.hh"
-#include "matrix.hh"
-#include "../inc/lacze_do_gnuplota.hh"
-
-/*!
- * Simple main program that demontrates how access
- * CMake definitions (here the version number) from source code.
- * 
- * EDIT: dodane kreowanie wektorow i macierzy plus obsluga lacza do gnuplota
- */
-
-#define DL_KROTKI_BOK  100
-#define DL_DLUGI_BOK   150
-
-/*!
- * Przyklad zapisu wspolrzednych zbioru punktow do strumienia wyjściowego.
- * Dane sa odpowiednio sformatowane, tzn. przyjęto notację stałoprzecinkową
- * z dokładnością do 10 miejsca po przecinku. Szerokość wyświetlanego pola 
- * to 16 miejsc, sposób wyrównywania - do prawej strony.
- * \param[in] StrmWy - strumien wyjsciowy, do ktorego maja zostac zapisane
- *                     kolejne wspolrzedne.
- * \param[in] Przesuniecie - ten parameter jest tylko po to, aby pokazać
- *                          mozliwosc zmiany wspolrzednych i prostokata
- *                          i zmiane jego polorzenia na okienku graficznym
- *                         rysownym przez gnuplota.
- * \retval true - gdy operacja zapisu powiodła się,
- * \retval false - w przypadku przeciwnym.
- */
-void PrzykladZapisuWspolrzednychDoStrumienia( std::ostream&     StrmWy, 
-                                              double       Przesuniecie
-                                            )
-{
-   //---------------------------------------------------------------
-   // To tylko przyklad !!!
-   // W programie nalezy uzywać pojęcia wektora, a nie oddzielnych 
-   // zmiennych do reprezentowania wspolrzednych!
-   //
-  double  x1, y1, x2, y2, x3, y3, x4, y4; 
-
-  x1 = y1 = 10;
-  x2 = x1 + DL_DLUGI_BOK;  y2 = y1;
-  x3 = x2;  y3 = y2 + DL_KROTKI_BOK;
-  x4 = x3 - DL_DLUGI_BOK; y4 = y3;
-
-
-  StrmWy << std::setw(16) << std::fixed << std::setprecision(10) << x1+Przesuniecie 
-         << std::setw(16) << std::fixed << std::setprecision(10) << y1+Przesuniecie << std::endl;
-  StrmWy << std::setw(16) << std::fixed << std::setprecision(10) << x2+Przesuniecie 
-         << std::setw(16) << std::fixed << std::setprecision(10) << y2+Przesuniecie << std::endl;
-  StrmWy << std::setw(16) << std::fixed << std::setprecision(10) << x3+Przesuniecie 
-         << std::setw(16) << std::fixed << std::setprecision(10) << y3+Przesuniecie << std::endl;
-  StrmWy << std::setw(16) << std::fixed << std::setprecision(10) << x4+Przesuniecie 
-         << std::setw(16) << std::fixed << std::setprecision(10) << y4+Przesuniecie << std::endl;
-  StrmWy << std::setw(16) << std::fixed << std::setprecision(10) << x1+Przesuniecie 
-         << std::setw(16) << std::fixed << std::setprecision(10) << y1+Przesuniecie << std::endl; 
-                             // Jeszcze raz zapisujemy pierwszy punkt,
-                             // aby gnuplot narysowal zamkniętą linię.
-}
+#include <limits>
+#include <thread>
 
 
 
-/*!
- * Przyklad zapisu wspolrzednych zbioru punktow do pliku, z ktorego
- * dane odczyta program gnuplot i narysuje je w swoim oknie graficznym.
- * \param[in] sNazwaPliku - nazwa pliku, do którego zostana zapisane
- *                          wspolrzędne punktów.
- * \param[in] Przesuniecie - ten parameter jest tylko po to, aby pokazać
- *                          mozliwosc zmiany wspolrzednych i prostokata
- *                          i zmiane jego polorzenia na okienku graficznym
- *                         rysownym przez gnuplota.
- * \retval true - gdy operacja zapisu powiodła się,
- * \retval false - w przypadku przeciwnym.
- */
-bool PrzykladZapisuWspolrzednychDoPliku( const char  *sNazwaPliku,
-                                         double       Przesuniecie
-                                       )
-{
-  std::ofstream  StrmPlikowy;
+#include "config.hpp"
+#include "Plateau.hpp"
+#include "Terrain.hpp"
+#include "Peek.hpp"
+#include "Ridge.hpp"
+#include "Drone.hpp"
 
-  StrmPlikowy.open(sNazwaPliku);
-  if (!StrmPlikowy.is_open())  {
-    std::cerr << ":(  Operacja otwarcia do zapisu \"" << sNazwaPliku << "\"" << std::endl
-	 << ":(  nie powiodla sie." << std::endl;
-    return false;
-  }
+#include "Menu.hpp"
+#include "Scene.hpp"
+#include "Vectors.hpp"
 
-  PrzykladZapisuWspolrzednychDoStrumienia(StrmPlikowy, Przesuniecie);
 
-  StrmPlikowy.close();
-  return !StrmPlikowy.fail();
-}
+
+bool DISPLAY = true;
+
+enum Draw{
+    goToDraw
+};
+
 
 int main() {
-  std::cout << "Project Rotation 2D based on C++ Boiler Plate v"
-            << PROJECT_VERSION_MAJOR /*duże zmiany, najczęściej brak kompatybilności wstecz */
-            << "."
-            << PROJECT_VERSION_MINOR /* istotne zmiany */
-            << "."
-            << PROJECT_VERSION_PATCH /* naprawianie bugów */
-            << "."
-            << PROJECT_VERSION_TWEAK /* zmiany estetyczne itd. */
-            << std::endl;
-  // std::system("cat ../LICENSE");
-  // do zadania Rotacja 2D
-  std::cout << "Vector:" << std::endl;
-  Vector tmpV1 = Vector();
-  std::cout << "Vector - konstruktor bezparametryczny:\n" << tmpV1 << std::endl;
-  double argumentsV[] = {1.0, 2.0};
-  Vector tmpV2 = Vector(argumentsV);
-  std::cout << "Vector - konstruktor parametryczny:\n" << tmpV2 << std::endl;
+    {
+        /* initialize random seed: */
+        srand(time(NULL));
+        bool finish = false;
+        /* -------------------------------------------------------------------------- */
+        /*                              INIT INFORMATIONS                             */
+        /* -------------------------------------------------------------------------- */
 
-  std::cout << "Matrix:" << std::endl;
-  Matrix tmpM1 = Matrix();
-  std::cout << "Matrix - konstruktor bezparametryczny:\n" << tmpM1 << std::endl;
-  double argumentsM[][SIZE] = {{1.0, 2.0},{3.0, 4.0}};
-  Matrix tmpM2 = Matrix(argumentsM);
-  std::cout << "Matrix - konstruktor parametryczny:\n" << tmpM2 << std::endl;
+        std::cout << "Project Rotation 3D based on C++ Boiler Plate by Jakub Delicat v"
+                << PROJECT_VERSION_MAJOR /*duże zmiany, najczęściej brak kompatybilności wstecz */
+                << "."
+                << PROJECT_VERSION_MINOR /* istotne zmiany */
+                << "."
+                << PROJECT_VERSION_PATCH /* naprawianie bugów */
+                << "."
+                << PROJECT_VERSION_TWEAK /* zmiany estetyczne itd. */
+                << std::endl;
+        std::system("cat ./LICENSE");
+        std::system("pwd");
+        std::cout << "Press enter to start..." << std::endl
+                << std::endl
+                << std::endl;
+        std::cin.ignore(std::numeric_limits<int>().max(), '\n');
 
-    PzG::LaczeDoGNUPlota  Lacze;  // Ta zmienna jest potrzebna do wizualizacji
-                                // rysunku prostokata
+        /* -------------------------------------------------------------------------- */
+        /*                              CREATING FIGURES                              */
+        /* -------------------------------------------------------------------------- */
 
-   //-------------------------------------------------------
-   //  Wspolrzedne wierzcholkow beda zapisywane w pliku "prostokat.dat"
-   //  Ponizsze metody powoduja, ze dane z pliku beda wizualizowane
-   //  na dwa sposoby:
-   //   1. Rysowane jako linia ciagl o grubosci 2 piksele
-   //
-  Lacze.DodajNazwePliku("../datasets/prostokat.dat",PzG::RR_Ciagly,2);
-   //
-   //   2. Rysowane jako zbior punktow reprezentowanych przez kwadraty,
-   //      których połowa długości boku wynosi 2.
-   //
-  Lacze.DodajNazwePliku("../datasets/prostokat.dat",PzG::RR_Punktowy,2);
-   //
-   //  Ustawienie trybu rysowania 2D, tzn. rysowany zbiór punktów
-   //  znajduje się na wspólnej płaszczyźnie. Z tego powodu powoduj
-   //  jako wspolrzedne punktow podajemy tylko x,y.
-   //
-  Lacze.ZmienTrybRys(PzG::TR_2D);
+        Scene scene;
+        std::thread displaying([&scene, &finish]() {
+            auto start = std::chrono::high_resolution_clock::now();
+            while(!finish){
+                
+                auto measure = std::chrono::high_resolution_clock::now();
+                auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(measure - start);
+                try{
+                    if(elapsed.count() >= (100)){
+                        start = std::chrono::high_resolution_clock::now();
+                        throw Draw::goToDraw;
+                    }
 
-  PrzykladZapisuWspolrzednychDoStrumienia(std::cout,0);
-  if (!PrzykladZapisuWspolrzednychDoPliku("../datasets/prostokat.dat",0)) return 1;
-  Lacze.Rysuj(); // <- Tutaj gnuplot rysuje, to co zapisaliśmy do pliku
-  std::cout << "Naciśnij ENTER, aby kontynuowac" << std::endl;
-  std::cin.ignore(100000,'\n');
-   //----------------------------------------------------------
-   // Ponownie wypisuje wspolrzedne i rysuje prostokąt w innym miejscu.
-   //
-  PrzykladZapisuWspolrzednychDoStrumienia(std::cout,50);
-  if (!PrzykladZapisuWspolrzednychDoPliku("../datasets/prostokat.dat",50)) return 1;
-  Lacze.Rysuj(); // <- Tutaj gnuplot rysuje, to co zapisaliśmy do pliku
-  std::cout << "Naciśnij ENTER, aby kontynuowac" << std::endl;
-  std::cin.ignore(100000,'\n');
+                }
+                catch(Draw){
+                    scene.Update();
+                    // std::cout << "\n\nCounting Vectors..." << std::endl;
 
-  // Z bazy projektu-wydmuszki Boiler Plate C++:
-  // Bring in the dummy class from the example source,
-  // just to show that it is accessible from main.cpp.
-  Dummy d = Dummy();
-  return d.doSomething() ? 0 : -1;
+                    // std::cout << "===========================================" << std::endl;
+                    // std::cout << std::setw(35) << "Number of Vectors on Scene: " << std::setw(10) << Vector3::HowManyObjects() << std::endl;
+                    // std::cout << std::setw(35) << "Number of Vectors from start: " << std::setw(10) << Vector3::AllHowManyObjects() << std::endl;
+                    // std::cout << "===========================================" << std::endl
+                    //           << std::endl
+                    //           << std::endl;
+                }
+            }
+        });
+            
+
+        std::shared_ptr<Drone> drone;
+
+        std::shared_ptr<Terrain> floor = std::make_shared<Terrain>();
+        scene.Add(std::move (floor));
+
+        /* -------------------------------------------------------------------------- */
+        /*                              MENU CONSTRUCTOR                              */
+        /* -------------------------------------------------------------------------- */
+        
+        // std::vector<MatrixRot> rotationSequece;
+        Menu menu({{"Print informations about selected object: ",
+                    [&drone]() mutable
+                    {
+                        if (drone == nullptr)
+                            throw std::logic_error("Did not choosed the active object.");
+                        std::cout << drone->SeflID() << " " << drone->Name() << std::endl;
+                        std::cout << "position: \n"
+                                << drone->position
+                                << "\neuler anglesRPY: \n"
+                                << drone->anglesRPY
+                                << "\nrotation Matrix: \n"
+                                << drone->orientation;
+                    }},
+                   {"Add Scene Object: ",
+                    [&scene]()
+                    {
+                        std::cout << "Choose type of object:" << std::endl;
+                        Vector3 pos =  {double(rand() % 200 + 1), double(rand() % 200 + 1), 0};
+                        pos[0] *= rand()%2 ==0 ? -1: 1;
+                        pos[1] *= rand()%2 ==0 ? -1: 1;
+                        Menu menu1 = {{"Drone", [&scene, &pos]()
+                                       {
+                                           std::shared_ptr<Drone> tmp = std::make_shared<Drone>(pos);
+                                           scene.Add(std::move(tmp));
+                                       }},
+                                      {"Peek", [&scene, &pos]()
+                                       {
+                                           std::shared_ptr<Peek> tmp = std::make_shared<Peek>(pos, 40, 30);
+                                           scene.Add(std::move(tmp));
+                                       }},
+                                      {"Ridge", [&scene, &pos]()
+                                       {
+                                           std::shared_ptr<Ridge> tmp = std::make_shared<Ridge>(pos, 30, 40);
+                                           scene.Add(std::move(tmp));
+                                       }},
+                                      {"Plateau", [&scene, &pos]()
+                                       {
+                                           std::shared_ptr<Plateau> tmp = std::make_shared<Plateau>(pos, 35, 35);
+                                           scene.Add(std::move(tmp));
+                                       }}
+
+                        };
+                        std::cout << menu1;
+                        std::cin >> menu1;
+                    }},
+                   {"Remove Scene Object", [&scene, &drone]()
+                    {
+                        if(scene.CountObjects() == 0){
+
+                            std::cout << "There is no SceneObject on Scene" << std::endl;
+                            return;
+                        }
+                        std::vector<std::pair<std::string, std::function<void(void)>>> vec;
+                        std::vector<std::function<void(void)>> lambdas;
+                        for (std::size_t i = 0; i < scene.CountObjects(); ++i)
+                        {
+                            lambdas.push_back([&scene, i,&drone]()
+                                              { 
+                                                  if(drone == std::dynamic_pointer_cast<Drone>(scene[i])){
+                                                      drone.~__shared_ptr<Drone>();
+                                                  }
+                                                  std::cout << "Usuwam" << scene[i]->Name()<< std::endl;
+                                                  scene.Remove(i);
+                                              });
+                            std::stringstream ss;
+                            ss << std::setw(15) << scene[i]->Name() << scene[i]->position;
+                            vec.push_back(std::pair<std::string, std::function<void(void)>>(ss.str(), lambdas[i]));
+                        }
+                        Menu menu2(vec);
+
+                        std::cout << menu2;
+                        std::cin >> menu2;
+                        vec.clear();
+                        
+                    }},
+                   {"Choose active drone: ", [&drone, &scene]()
+                    {
+                        // std::cout << "There are " << scene.CountObjects() << " on scene. Type number. 1 - n" << std::endl;
+                        int d = 1;
+                        for (std::size_t i = 0; i < scene.CountObjects(); ++i)
+                        {
+                            auto localPtr = std::dynamic_pointer_cast<Drone>(scene[i]);
+                            if (localPtr != nullptr)
+                            {
+                                if (localPtr == drone)
+                                    std::cout << "* ";
+                                else
+                                    std::cout << "  ";
+                                std::cout << d++ << " Drone is on position:  " << localPtr->position << std::endl;
+                            }
+                        }
+                        std::cout << "Type number of Drone" << std::endl;
+                        std::size_t k = 1;
+                        std::cin >> k;
+                        drone->ChangeColor(1);
+                        drone = std::dynamic_pointer_cast<Drone>(scene.SelectDrone(k));
+                        drone->ChangeColor(2);
+                    }},
+                   {"Move drone", [&drone]()
+                    {
+                        if (drone == nullptr)
+                            throw std::logic_error("Did not choosed the active object.");
+                        std::cout << "Type height, angle and length of move." << std::endl;
+                        Vector3 pos;
+                        std::cin >> pos;
+                        if(pos[0] != 0)
+                            drone->moves.push([pos, drone]()
+                                            { drone->GoVerdical(pos[0] ); });
+                        if (pos[1] != 0)
+                            drone->moves.push([pos, drone]()
+                                            { drone->Right(pos[1]); });
+                        if (pos[2] != 0)
+                            drone->moves.push([pos, drone]()
+                                            { drone->Forward(pos[2]); });
+                        if (pos[0] != 0)
+                            drone->moves.push([pos, drone]()
+                                            { drone->GoVerdical(pos[0] * -1); });
+
+
+                        drone->MakeRoute(pos[0], pos[1], pos[2]);
+                    }},
+                   {"Recognize flight", [&drone]()
+                    {
+                        if (drone == nullptr)
+                            throw std::logic_error("Did not choosed the active object.");
+                        std::cout << "Type height, angle and length of move." << std::endl;
+                        drone->moves.push([&drone]()
+                                        { drone->GoVerdical(150); });
+                        for (int i = 0; i < 30; ++i)
+                        {
+                            drone->moves.push([drone]()
+                                            {
+                                                drone->Right(360 / 20);
+                                                drone->Forward(10);
+                                            });
+                        }
+                        drone->moves.push([drone]()
+                                        { drone->GoVerdical(150 * -1); });
+
+                        // drone->MakeRoute(pos[0], pos[1], pos[2]);
+                    }},
+                   {"Exit", [&finish, &scene]()
+                    {
+                        finish = true;
+                        throw std::logic_error("Exit");
+                    }}});
+        {
+            Vector3 pos = {double(rand() % 200 + 1), double(rand() % 200 + 1), 0};
+            pos = {double(rand() % 200 + 1), double(rand() % 200 + 1), 0};
+            pos[0] *= rand() % 2 == 0 ? -1 : 1;
+            pos[1] *= rand() % 2 == 0 ? -1 : 1;
+
+            std::shared_ptr<Plateau> tmp = std::make_shared<Plateau>(pos, 35, 35);
+            scene.Add(std::move(tmp));
+
+            pos = {double(rand() % 200 + 1), double(rand() % 200 + 1), 0};
+            pos[0] *= rand() % 2 == 0 ? -1 : 1;
+            pos[1] *= rand() % 2 == 0 ? -1 : 1;
+            std::shared_ptr<Drone> tmp1 = std::make_shared<Drone>(pos);
+            scene.Add(std::move(tmp1));
+
+            pos = {double(rand() % 200 + 1), double(rand() % 200 + 1), 0};
+            pos[0] *= rand() % 2 == 0 ? -1 : 1;
+            pos[1] *= rand() % 2 == 0 ? -1 : 1;
+            std::shared_ptr<Peek> tmp2 = std::make_shared<Peek>(pos, 40, 30);
+            scene.Add(std::move(tmp2));
+
+            pos = {double(rand() % 200 + 1), double(rand() % 200 + 1), 0};
+            pos[0] *= rand() % 2 == 0 ? -1 : 1;
+            pos[1] *= rand() % 2 == 0 ? -1 : 1;
+            std::shared_ptr<Ridge> tmp3 = std::make_shared<Ridge>(pos, 30, 40);
+            scene.Add(std::move(tmp3));
+        }
+        
+
+        drone =  std::dynamic_pointer_cast<Drone>(scene.SelectDrone(1));
+        drone->ChangeColor(2);
+
+        /* -------------------------------------------------------------------------- */
+        /*                                  MAIN LOOP                                 */
+        /* -------------------------------------------------------------------------- */
+        std::thread menuig([&menu, &drone, &finish, &scene]() {
+            while (!finish) {
+                std::cout << "\n\nCounting Vectors..." << std::endl;
+
+                std::cout << "===========================================" << std::endl;
+                std::cout << std::setw(35) << "Number of Vectors on Scene: " << std::setw(10) << Vector3::HowManyObjects() << std::endl;
+                std::cout << std::setw(35) << "Number of Vectors from start: " << std::setw(10) << Vector3::AllHowManyObjects() << std::endl;
+                std::cout << "===========================================" << std::endl;
+
+                std::cout << menu;
+                try {
+                
+                
+
+                    std::cin >> menu;
+                } catch (std::logic_error &e) {
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<int>().max(), '\n');
+                    if(std::string(e.what()) == "Exit"){
+                        // scene.~Scene();
+
+                        finish = true;
+                    }else{
+                        std::cerr << std::endl
+                                << std::endl
+                                << "!!![ERROR]!!!" << std::endl;
+                        std::cerr << e.what() << std::endl
+                                << std::endl;
+                    }
+                    
+                    
+                }
+                catch (...) {
+                    std::cerr << "Fatal error, cautch ununderstable throw!!!" << std::endl;
+                    scene.~Scene();
+                    exit(-1);
+                }
+            }
+            
+        });
+
+        displaying.join();
+        menuig.join();
+
+        // displaying.~thread();
+        // menuig.~thread();
+    }
+    std::cout << "===========================================" << std::endl;
+    // Cos sie ze staticami dzieje
+    std::cout << std::setw(35) << "Number of Vectors on Scene: " << std::setw(10) << Vector3::HowManyObjects()-39 << std::endl;
+    std::cout << std::setw(35) << "Number of Vectors from start: " << std::setw(10) << Vector3::AllHowManyObjects() << std::endl;
+    std::cout << "===========================================" << std::endl;
+
+    return 0;
 }
