@@ -23,10 +23,7 @@
  */
 class Drone : public SceneObject{
   private:
-    /**
-     * @brief Animation interface and properties
-     */
-    Animation animation;
+    
 
     /**
      * @brief Unit Vector3 where Drone is aimed to.
@@ -50,6 +47,11 @@ class Drone : public SceneObject{
     std::shared_ptr<Route> route;
 
   public:
+    /**
+     * @brief Animation interface and properties
+     */
+    Animation animation;
+    
     /**
      * @brief Queue of moves for split stages of Animation.
      */

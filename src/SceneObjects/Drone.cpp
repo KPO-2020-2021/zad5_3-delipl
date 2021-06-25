@@ -58,6 +58,7 @@ SceneObject("point.dat", position, scale, nullptr)
     this->body->UpdatePoints();
     this->animation.SetGoalPosition(this->position);
     this->animation.SetGoalOrientation(this->anglesRPY[2]);
+    this->shadowRadius = this->body->shadowRadius+this->rotors[0]->shadowRadius;
 }
 
 Drone::~Drone() {

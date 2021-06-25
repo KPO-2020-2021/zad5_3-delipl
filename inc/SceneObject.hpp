@@ -40,6 +40,8 @@ class SceneObject : public Object {
      */
     double shadowRadius;
 
+    SceneObject() = default;
+
     /**
      * @brief Construct a new Scene Object object
      * 
@@ -68,7 +70,7 @@ class SceneObject : public Object {
      * @return true if they are overlapping.
      * @return false 
      */
-    bool IsOverlapping(const SceneObject &obj);
+    bool IsOverlapping(SceneObject *obj);
 
     /**
      * @brief Abstract method for use in every frame of the Animation.

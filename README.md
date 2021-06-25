@@ -1,18 +1,15 @@
 
 # Zadanie 5 Dron na Tytanie Faza 2
 ## Wykonane zadania
-- Stworzenie 3 przeszkód
-- Możliwość tworzenia obiektów
-- Możliwość usuwania obiektów
-- Losowe położenie 
+
 
 ![Przepis na naleśniczki w Dron.cpp](./img/3drones.gif)
 
 ## Budowanie
 
 ``` bash
-git clone https://github.com/KPO-2020-2021/zad5_2-delipl.git # Cloning repository
-cd zad5_2-delipl
+git clone https://github.com/KPO-2020-2021/zad5_3-delipl.git # Cloning repository
+cd zad5_3-delipl
 
 mkdir lib/  # Download doctest lib
 cd lib

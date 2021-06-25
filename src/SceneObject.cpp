@@ -15,9 +15,11 @@ SceneObject::SceneObject(const std::string name, const Vector3 &centerPosition,
         {
             if ((point1 - point2).Length() > this->shadowRadius)
                 this->shadowRadius = (point1 - point2).Length();
+            
         }
     }
     this->shadowRadius = this->shadowRadius / 2;
+    std::cout << "CIEN TO: " << this->shadowRadius << std::endl;
 }
 
  SceneObject ::~SceneObject(){
@@ -30,6 +32,11 @@ void SceneObject::Draw() {
     Scene::Draw(this);
 }
 
-bool SceneObject ::IsOverlapping(const SceneObject &obj){
-    return obj.CanLand();
+bool SceneObject ::IsOverlapping(SceneObject *obj){
+    if(obj == this){
+        return false;
+    }
+    auto var = (this->position - obj->position).Length() <= this->shadowRadius + obj->shadowRadius ? true : false;
+
+    return var;
 }

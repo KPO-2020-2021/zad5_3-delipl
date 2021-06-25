@@ -116,27 +116,56 @@ int main() {
                     [&scene]()
                     {
                         std::cout << "Choose type of object:" << std::endl;
-                        Vector3 pos =  {double(rand() % 200 + 1), double(rand() % 200 + 1), 0};
+                        Vector3 pos =  {double(rand() % 270 + 1), double(rand() % 270 + 1), 0};
                         pos[0] *= rand()%2 ==0 ? -1: 1;
                         pos[1] *= rand()%2 ==0 ? -1: 1;
-                        Menu menu1 = {{"Drone", [&scene, &pos]()
+                        Menu menu1 = {{"Drone", [&scene]()
                                        {
-                                           std::shared_ptr<Drone> tmp = std::make_shared<Drone>(pos);
+                                           std::shared_ptr<Drone> tmp;
+                                           do
+                                           {
+                                               std::cout << "Dobię" << std::endl;
+                                               Vector3 pos = {double(rand() % 270 + 1), double(rand() % 270 + 1), 0};
+                                               pos[0] *= rand() % 2 == 0 ? -1 : 1;
+                                               pos[1] *= rand() % 2 == 0 ? -1 : 1;
+                                               tmp = std::make_shared<Drone>(pos);
+                                           } while (scene.CollisionDetector(tmp));
                                            scene.Add(std::move(tmp));
                                        }},
-                                      {"Peek", [&scene, &pos]()
+                                      {"Peek", [&scene]()
                                        {
-                                           std::shared_ptr<Peek> tmp = std::make_shared<Peek>(pos, 40, 30);
+                                           std::shared_ptr<Peek> tmp;
+                                           do
+                                           {
+                                               Vector3 pos = {double(rand() % 270 + 1), double(rand() % 270 + 1), 0};
+                                               pos[0] *= rand() % 2 == 0 ? -1 : 1;
+                                               pos[1] *= rand() % 2 == 0 ? -1 : 1;
+                                               tmp = std::make_shared<Peek>(pos, 35, 35);
+                                           } while (scene.CollisionDetector(tmp));
                                            scene.Add(std::move(tmp));
                                        }},
-                                      {"Ridge", [&scene, &pos]()
+                                      {"Ridge", [&scene]()
                                        {
-                                           std::shared_ptr<Ridge> tmp = std::make_shared<Ridge>(pos, 30, 40);
+                                           std::shared_ptr<Ridge> tmp;
+                                           do
+                                           {
+                                               Vector3 pos = {double(rand() % 270 + 1), double(rand() % 270 + 1), 0};
+                                               pos[0] *= rand() % 2 == 0 ? -1 : 1;
+                                               pos[1] *= rand() % 2 == 0 ? -1 : 1;
+                                               tmp = std::make_shared<Ridge>(pos, 35, 35);
+                                           } while (scene.CollisionDetector(tmp));
                                            scene.Add(std::move(tmp));
                                        }},
-                                      {"Plateau", [&scene, &pos]()
+                                      {"Plateau", [&scene]()
                                        {
-                                           std::shared_ptr<Plateau> tmp = std::make_shared<Plateau>(pos, 35, 35);
+                                           std::shared_ptr<Plateau> tmp;
+                                           do
+                                           {
+                                               Vector3 pos = {double(rand() % 270 + 1), double(rand() % 270 + 1), 0};
+                                               pos[0] *= rand() % 2 == 0 ? -1 : 1;
+                                               pos[1] *= rand() % 2 == 0 ? -1 : 1;
+                                               tmp = std::make_shared<Plateau>(pos, 35, 35);
+                                           } while (scene.CollisionDetector(tmp));
                                            scene.Add(std::move(tmp));
                                        }}
 
@@ -246,31 +275,36 @@ int main() {
                         throw std::logic_error("Exit");
                     }}});
         {
-            Vector3 pos = {double(rand() % 200 + 1), double(rand() % 200 + 1), 0};
-            pos = {double(rand() % 200 + 1), double(rand() % 200 + 1), 0};
+            Vector3 pos = {double(rand() % 270 + 1), double(rand() % 270 + 1), 0};
+            pos = {double(rand() % 270 + 1), double(rand() % 270 + 1), 0};
+            pos[0] *= rand() % 2 == 0 ? -1 : 1;
+            pos[1] *= rand() % 2 == 0 ? -1 : 1;
+            std::shared_ptr<Drone> tmp1 = std::make_shared<Drone>(pos);
+            if (!scene.CollisionDetector(tmp1))
+                scene.Add(std::move(tmp1));
+                
+            pos = {double(rand() % 270 + 1), double(rand() % 270 + 1), 0};
             pos[0] *= rand() % 2 == 0 ? -1 : 1;
             pos[1] *= rand() % 2 == 0 ? -1 : 1;
 
             std::shared_ptr<Plateau> tmp = std::make_shared<Plateau>(pos, 35, 35);
-            scene.Add(std::move(tmp));
+            if(!scene.CollisionDetector(tmp))
+                scene.Add(std::move(tmp));
 
-            pos = {double(rand() % 200 + 1), double(rand() % 200 + 1), 0};
-            pos[0] *= rand() % 2 == 0 ? -1 : 1;
-            pos[1] *= rand() % 2 == 0 ? -1 : 1;
-            std::shared_ptr<Drone> tmp1 = std::make_shared<Drone>(pos);
-            scene.Add(std::move(tmp1));
 
-            pos = {double(rand() % 200 + 1), double(rand() % 200 + 1), 0};
+            pos = {double(rand() % 270 + 1), double(rand() % 270 + 1), 0};
             pos[0] *= rand() % 2 == 0 ? -1 : 1;
             pos[1] *= rand() % 2 == 0 ? -1 : 1;
             std::shared_ptr<Peek> tmp2 = std::make_shared<Peek>(pos, 40, 30);
-            scene.Add(std::move(tmp2));
+            if (!scene.CollisionDetector(tmp2))
+                scene.Add(std::move(tmp2));
 
-            pos = {double(rand() % 200 + 1), double(rand() % 200 + 1), 0};
+            pos = {double(rand() % 270 + 1), double(rand() % 270 + 1), 0};
             pos[0] *= rand() % 2 == 0 ? -1 : 1;
             pos[1] *= rand() % 2 == 0 ? -1 : 1;
             std::shared_ptr<Ridge> tmp3 = std::make_shared<Ridge>(pos, 30, 40);
-            scene.Add(std::move(tmp3));
+            if (!scene.CollisionDetector(tmp3))
+                scene.Add(std::move(tmp3));
         }
         
 

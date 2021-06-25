@@ -116,5 +116,13 @@ class Scene {
      * @return std::shared_ptr<Drone>& drone
      */
     std::shared_ptr<SceneObject> &SelectDrone(const std::size_t &index);
+
+    /**
+     * @brief Check collision with another objects on scene
+     * @param obj checked object
+     * @return true if colliding
+     * @return false if not
+     */
+    bool CollisionDetector(const std::shared_ptr<SceneObject> &obj) const;
 };
 #endif  // __SCENE_HPP__

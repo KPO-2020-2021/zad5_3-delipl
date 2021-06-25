@@ -49,7 +49,32 @@ std::shared_ptr<SceneObject> Scene::operator[](const std::size_t &i) const {
     return this->activeObjects[i];
 }
 
-void Scene::Update(){   
+void Scene::Update(){
+
+    for (std::size_t i = 0; i < this->activeObjects.size(); ++i)
+    {
+        std::shared_ptr<SceneObject> obj;
+        try
+        {
+         obj = this->SelectDrone(i);
+        }
+        catch(...){
+            continue;
+        }
+        auto drone = std::dynamic_pointer_cast<Drone>(obj);
+        if (drone != nullptr)
+        {
+            if(drone->position[2] > 0){
+                if(this->CollisionDetector(drone) && drone->position[2] == drone->animation.goalPosition[2]){
+                    std::cout << "!!![EMERYGENCY LANDING]!!!" << std::endl;
+                    for (std::size_t i = 0; i < drone->moves.size(); ++i){
+                        drone->moves.pop();
+                    }
+                }
+            }
+        }
+    }
+
     for (auto &obj : this->activeObjects)
         obj->Update();
     api.Rysuj();
@@ -99,4 +124,18 @@ std::shared_ptr<SceneObject> &Scene::SelectDrone(const std::size_t &index)
     }
     throw std::logic_error("There is no drones");
     return activeObjects[0];
+}
+
+bool Scene::CollisionDetector(const std::shared_ptr<SceneObject> &obj) const{
+    for(auto &sceneObject: this->activeObjects){
+        if (sceneObject == this->activeObjects[0])
+            continue;
+        if (obj->IsOverlapping(sceneObject.get()))
+        {
+
+            return true;
+
+        }
+    }
+    return false;
 }
