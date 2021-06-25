@@ -1,7 +1,8 @@
 
 # Zadanie 5 Dron na Tytanie Faza 2
 ## Wykonane zadania
-
+- Dron ląduje poza przeszkodami
+- przeszkody i drony losowo spawnują się na scenie i nie kolidują ze sobą
 
 ![Przepis na naleśniczki w Dron.cpp](./img/3drones.gif)
 
