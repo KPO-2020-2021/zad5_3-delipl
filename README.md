@@ -1,5 +1,5 @@
 
-# Zadanie 5 Dron na Tytanie Faza 2
+# Zadanie 5 Dron na Tytanie Faza 3
 ## Wykonane zadania
 - Dron ląduje poza przeszkodami
 - przeszkody i drony losowo spawnują się na scenie i nie kolidują ze sobą
